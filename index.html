@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WireMock Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="column">
+            <h3>Mappings</h3> 
+            <button id="delete-all-mappings">Удалить все маппинги</button>
+            <ul id="mappings-list"></ul>
+            <button id="create-mapping">Создать новый маппинг</button>
+        </div>
+        <div class="column">
+            <h3>Редактор маппинга</h3>
+            <textarea id="mapping-editor"></textarea>
+            <button id="save-mapping">Сохранить маппинг</button>
+        </div>
+        <div class="column">
+            <h3>Файлы</h3>
+            <ul id="files-list"></ul>
+            <input type="text" id="new-file-name" placeholder="Имя нового файла">
+            <button id="create-file">Создать новый файл</button>
+            <h3>Редактор файла</h3>
+            <textarea id="file-editor"></textarea>
+            <button id="save-file">Сохранить файл</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
