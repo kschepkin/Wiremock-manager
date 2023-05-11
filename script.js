@@ -1,6 +1,3 @@
-
-
-
 //Загружаем конфиг
 let config;
 fetch('config.json')
@@ -22,6 +19,8 @@ const createMapping = document.getElementById('create-mapping');
 const createFile = document.getElementById('create-file');
 const newFileName = document.getElementById('new-file-name');
 const deleteAllMappings = document.getElementById('delete-all-mappings');
+const requestList = document.getElementById("request-list");
+const requestDetails = document.getElementById("request-details");
 
 
 
@@ -34,11 +33,13 @@ function fetchMappings() {
 
             data.mappings.forEach(mapping => {
                 const li = document.createElement('li');
+                li.classList.add('list-group-item','hstack', 'gap-3');
                 li.innerText = mapping.request.url;
 
                 // Создаем кнопку "удалить"
                 const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'удалить';
+                deleteButton.classList.add('btn', 'btn-danger', 'mb-1');
+                deleteButton.textContent = 'X';
                 deleteButton.addEventListener('click', (e) => {
                     e.stopPropagation(); // Останавливаем всплытие события, чтобы избежать выбора маппинга
                     deleteMapping(mapping.id);
@@ -133,11 +134,13 @@ function fetchFiles() {
                 const fileName = filePathParts[filePathParts.length - 1];
 
                 const listItem = document.createElement('li');
+                listItem.classList.add('list-group-item','hstack', 'gap-3');
                 listItem.textContent = fileName;
 
                 // Создаем кнопку "удалить"
                 const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'удалить';
+                deleteButton.classList.add('btn', 'btn-danger', 'mb-1' );
+                deleteButton.textContent = 'X';
                 deleteButton.addEventListener('click', (e) => {
                     e.stopPropagation(); // Останавливаем всплытие события, чтобы избежать выбора файла
                     deleteFile(fileName);
@@ -146,7 +149,7 @@ function fetchFiles() {
                 listItem.appendChild(deleteButton);
                 listItem.addEventListener('click', () => {
                     fetchFileContent(fileName);
-                    fileNameInput.value = fileName;
+                    newFileName.value = fileName;
                 });
                 filesList.appendChild(listItem);
             });
@@ -216,13 +219,13 @@ createFile.addEventListener('click', () => {
 });
 
 
-deleteAllMappings.addEventListener('click', () => {
-    fetch(`${config.serverUrl}/__admin/mappings`, {
-        method: 'DELETE'
-    }).then(() => {
-        fetchMappings();
-    });
-});
+// deleteAllMappings.addEventListener('click', () => {
+//     fetch(`${config.serverUrl}/__admin/mappings`, {
+//         method: 'DELETE'
+//     }).then(() => {
+//         fetchMappings();
+//     });
+// });
 
 
 fetchMappings();
