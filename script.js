@@ -1,4 +1,4 @@
-//Загружаем конфиг
+// Загружаем конфиг
 let config;
 fetch('config.json')
     .then(response => response.json())
@@ -7,7 +7,6 @@ fetch('config.json')
         fetchMappings();
         fetchFiles();
     });
-
 
 const mappingsList = document.getElementById('mappings-list');
 const mappingEditor = document.getElementById('mapping-editor');
@@ -19,9 +18,6 @@ const createMapping = document.getElementById('create-mapping');
 const createFile = document.getElementById('create-file');
 const newFileName = document.getElementById('new-file-name');
 const deleteAllMappings = document.getElementById('delete-all-mappings');
-const requestList = document.getElementById("request-list");
-const requestDetails = document.getElementById("request-details");
-
 
 function showToast(type) {
     const toast = new bootstrap.Toast(document.getElementById(`${type}-toast`), {
@@ -30,7 +26,7 @@ function showToast(type) {
     toast.show();
 }
 
-//Работа с маппингами
+// Работа с маппингами
 function fetchMappings() {
     fetch(`${config.serverUrl}/__admin/mappings`)
         .then(response => response.json())
@@ -39,7 +35,7 @@ function fetchMappings() {
 
             data.mappings.forEach(mapping => {
                 const li = document.createElement('li');
-                li.classList.add('list-group-item','hstack', 'gap-3');
+                li.classList.add('list-group-item', 'hstack', 'gap-3');
                 li.innerText = mapping.request.url;
 
                 // Создаем кнопку "удалить"
@@ -58,7 +54,6 @@ function fetchMappings() {
         });
 }
 
-
 function deleteMapping(id) {
     fetch(`${config.serverUrl}/__admin/mappings/${id}`, {
         method: 'DELETE'
@@ -76,10 +71,6 @@ function deleteMapping(id) {
             showToast("error");
         });
 }
-
-
-
-
 
 let isEditing = false;
 
@@ -112,33 +103,7 @@ function createNewMapping() {
     isEditing = false;
 }
 
-createMapping.addEventListener('click', () => {createNewMapping();});
-
-
-
-function showSuccessMessage(button) {
-    const originalClasses = button.classList;
-    button.classList.add("btn-success");
-    setTimeout(() => {
-        button.classList.remove("btn-success");
-    }, 4000);
-}
-
-function showErrorMessage(button, message) {
-    const originalClasses = button.classList;
-    button.classList.add("btn-danger");
-    setTimeout(() => {
-        button.classList.remove("btn-danger");
-    }, 4000);
-
-    const alertDiv = document.createElement("div");
-    alertDiv.classList.add("alert", "alert-danger", "fixed-top");
-    alertDiv.textContent = message;
-    document.body.appendChild(alertDiv);
-    setTimeout(() => {
-        document.body.removeChild(alertDiv);
-    }, 4000);
-}
+createMapping.addEventListener('click', () => { createNewMapping(); });
 
 saveMapping.addEventListener('click', () => {
     const mapping = JSON.parse(mappingEditor.value);
@@ -163,10 +128,6 @@ saveMapping.addEventListener('click', () => {
         .then((response) => {
             if (response.ok) {
                 fetchMappings();
-                saveMapping.classList.add("btn-success");
-                setTimeout(() => {
-                    saveMapping.classList.remove("btn-success");
-                }, 4000);
                 showToast("success");
             } else {
                 throw new Error("Ошибка сервера");
@@ -178,10 +139,7 @@ saveMapping.addEventListener('click', () => {
         });
 });
 
-
-
-
-//Работа с файлами
+// Работа с файлами
 function fetchFiles() {
     fetch(`${config.serverUrl}/__admin/files`)
         .then(response => response.json())
@@ -193,12 +151,12 @@ function fetchFiles() {
                 const fileName = filePathParts[filePathParts.length - 1];
 
                 const listItem = document.createElement('li');
-                listItem.classList.add('list-group-item','hstack', 'gap-3');
+                listItem.classList.add('list-group-item', 'hstack', 'gap-3');
                 listItem.textContent = fileName;
 
                 // Создаем кнопку "удалить"
                 const deleteButton = document.createElement('button');
-                deleteButton.classList.add('btn', 'btn-danger', 'mb-1' );
+                deleteButton.classList.add('btn', 'btn-danger', 'mb-1');
                 deleteButton.textContent = 'X';
                 deleteButton.addEventListener('click', (e) => {
                     e.stopPropagation(); // Останавливаем всплытие события, чтобы избежать выбора файла
@@ -281,37 +239,6 @@ saveFile.addEventListener('click', () => {
             showToast("error");
         });
 });
-
-
-
-createFile.addEventListener('click', () => {
-    const filename = newFileName.value;
-    const fileContent = fileEditor.value;
-
-    if (filename === '') {
-        showToast('Пожалуйста, введите имя файла.', 'error');
-        return;
-    }
-
-    fetch(`${config.serverUrl}/__admin/files/${filename}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: fileContent
-    }).then((response) => {
-        if (response.ok) {
-            showToast('Файл успешно создан.', 'success');
-            fetchFiles();
-        } else {
-            showToast('Не удалось создать файл. Пожалуйста, попробуйте еще раз.', 'error');
-        }
-    }).catch((error) => {
-        showToast(`Ошибка: ${error.message}`, 'error');
-    });
-});
-
-
 
 
 // deleteAllMappings.addEventListener('click', () => {
