@@ -23,6 +23,12 @@ const requestList = document.getElementById("request-list");
 const requestDetails = document.getElementById("request-details");
 
 
+function showToast(type) {
+    const toast = new bootstrap.Toast(document.getElementById(`${type}-toast`), {
+        delay: 4000
+    });
+    toast.show();
+}
 
 //Работа с маппингами
 function fetchMappings() {
@@ -56,10 +62,21 @@ function fetchMappings() {
 function deleteMapping(id) {
     fetch(`${config.serverUrl}/__admin/mappings/${id}`, {
         method: 'DELETE'
-    }).then(() => {
-        fetchMappings();
-    });
+    })
+        .then(response => {
+            if (response.ok) {
+                fetchMappings();
+                showToast("success");
+            } else {
+                throw new Error("Ошибка сервера");
+            }
+        })
+        .catch(error => {
+            console.error("Ошибка:", error);
+            showToast("error");
+        });
 }
+
 
 
 
@@ -97,6 +114,32 @@ function createNewMapping() {
 
 createMapping.addEventListener('click', () => {createNewMapping();});
 
+
+
+function showSuccessMessage(button) {
+    const originalClasses = button.classList;
+    button.classList.add("btn-success");
+    setTimeout(() => {
+        button.classList.remove("btn-success");
+    }, 4000);
+}
+
+function showErrorMessage(button, message) {
+    const originalClasses = button.classList;
+    button.classList.add("btn-danger");
+    setTimeout(() => {
+        button.classList.remove("btn-danger");
+    }, 4000);
+
+    const alertDiv = document.createElement("div");
+    alertDiv.classList.add("alert", "alert-danger", "fixed-top");
+    alertDiv.textContent = message;
+    document.body.appendChild(alertDiv);
+    setTimeout(() => {
+        document.body.removeChild(alertDiv);
+    }, 4000);
+}
+
 saveMapping.addEventListener('click', () => {
     const mapping = JSON.parse(mappingEditor.value);
     let requestUrl;
@@ -116,10 +159,26 @@ saveMapping.addEventListener('click', () => {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(mapping)
-    }).then(() => {
-        fetchMappings();
-    });
+    })
+        .then((response) => {
+            if (response.ok) {
+                fetchMappings();
+                saveMapping.classList.add("btn-success");
+                setTimeout(() => {
+                    saveMapping.classList.remove("btn-success");
+                }, 4000);
+                showToast("success");
+            } else {
+                throw new Error("Ошибка сервера");
+            }
+        })
+        .catch((error) => {
+            console.error("Ошибка:", error);
+            showToast("error");
+        });
 });
+
+
 
 
 //Работа с файлами
@@ -159,10 +218,21 @@ function fetchFiles() {
 function deleteFile(fileName) {
     fetch(`${config.serverUrl}/__admin/files/${fileName}`, {
         method: 'DELETE'
-    }).then(() => {
-        fetchFiles();
-    });
+    })
+        .then(response => {
+            if (response.ok) {
+                fetchFiles();
+                showToast("success");
+            } else {
+                throw new Error("Ошибка сервера");
+            }
+        })
+        .catch(error => {
+            console.error("Ошибка:", error);
+            showToast("error");
+        });
 }
+
 
 
 
@@ -186,16 +256,32 @@ saveFile.addEventListener('click', () => {
         alert('Пожалуйста, введите имя файла.');
         return;
     }
+
     fetch(`${config.serverUrl}/__admin/files/${filename}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
         },
         body: fileContent
-    }).then(() => {
-        fetchFiles();
-    });
+    })
+        .then(response => {
+            if (response.ok) {
+                fetchFiles();
+                saveFile.classList.add("btn-success");
+                setTimeout(() => {
+                    saveFile.classList.remove("btn-success");
+                }, 4000);
+                showToast("success");
+            } else {
+                throw new Error("Ошибка сервера");
+            }
+        })
+        .catch(error => {
+            console.error("Ошибка:", error);
+            showToast("error");
+        });
 });
+
 
 
 createFile.addEventListener('click', () => {
@@ -203,7 +289,7 @@ createFile.addEventListener('click', () => {
     const fileContent = fileEditor.value;
 
     if (filename === '') {
-        alert('Пожалуйста, введите имя файла.');
+        showToast('Пожалуйста, введите имя файла.', 'error');
         return;
     }
 
@@ -213,10 +299,19 @@ createFile.addEventListener('click', () => {
             'Content-Type': 'application/json'
         },
         body: fileContent
-    }).then(() => {
-        fetchFiles();
+    }).then((response) => {
+        if (response.ok) {
+            showToast('Файл успешно создан.', 'success');
+            fetchFiles();
+        } else {
+            showToast('Не удалось создать файл. Пожалуйста, попробуйте еще раз.', 'error');
+        }
+    }).catch((error) => {
+        showToast(`Ошибка: ${error.message}`, 'error');
     });
 });
+
+
 
 
 // deleteAllMappings.addEventListener('click', () => {
