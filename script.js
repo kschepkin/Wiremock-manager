@@ -249,6 +249,55 @@ saveFile.addEventListener('click', () => {
 //     });
 // });
 
+function applyMappingOption() {
+    const mappingOptionSelect = document.getElementById('mapping-option');
+    const mappingOption = mappingOptionSelect.value;
+    const mappingEditor = document.getElementById('mapping-editor');
+    let currentMapping;
+
+    try {
+        currentMapping = JSON.parse(mappingEditor.value);
+    } catch (e) {
+        showToast("error");
+        mappingOptionSelect.selectedIndex = 0;
+        return;
+    }
+
+    if (!currentMapping.response) {
+        currentMapping.response = {
+            "status": 200,
+            "headers": {
+                "Content-Type": "application/json"
+            },
+            "bodyFileName": "example.json"
+        };
+    }
+
+    if (mappingOption === 'delay') {
+        currentMapping.response.fixedDelayMilliseconds = 5000;
+    } else if (mappingOption === 'status500') {
+        currentMapping.response.status = 500;
+    } else if (mappingOption === 'body-replace') {
+        delete currentMapping.response.bodyFileName;
+        currentMapping.response.body = "example";
+    } else {
+        showToast("error");
+        mappingOptionSelect.selectedIndex = 0;
+        return;
+    }
+
+    mappingEditor.value = JSON.stringify(currentMapping, null, 2);
+    showToast("success", "Опция применена успешно.");
+    mappingOptionSelect.selectedIndex = 0;
+}
+
+
+document.getElementById('mapping-option').addEventListener('change', () => {
+    applyMappingOption();
+});
+
+
+
 
 fetchMappings();
 fetchFiles();
