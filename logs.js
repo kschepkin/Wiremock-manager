@@ -27,21 +27,21 @@ $(document).ready(function () {
 
     function getRequestDetails(requestId) {
         $.get(`${config.serverUrl}/__admin/requests/` + requestId, function (data) {
-          displayRequestDetails(data);
+            displayRequestDetails(data);
         });
-      }
-      
-      function displayRequestDetails(request) {
+    }
+
+    function displayRequestDetails(request) {
         // Функция для форматирования JSON с отступами и переносами строк
         function formatJSON(json) {
-          return JSON.stringify(json, null, 2)
-            .replace(/\\n/g, '\n') // Замена символов перевода строки
-            .replace(/\\'/g, "'") // Удаление экранирования кавычек
-            .replace(/\\"/g, '"') // Замена экранированных кавычек
-            .replace(/\}"/g, '}') // Удаление кавычек после }
-            .replace(/"\{/g, '{'); // Удаление кавычек перед {
+            return JSON.stringify(json, null, 2)
+                .replace(/\\n/g, '\n') // Замена символов перевода строки
+                .replace(/\\'/g, "'") // Удаление экранирования кавычек
+                .replace(/\\"/g, '"') // Замена экранированных кавычек
+                .replace(/\}"/g, '}') // Удаление кавычек после }
+                .replace(/"\{/g, '{'); // Удаление кавычек перед {
         }
-      
+
         let detailsREQ = `
           <div class="card-header">${request.request.method} ${request.request.url}</div>
           <div class="card-body">
@@ -50,7 +50,7 @@ $(document).ready(function () {
             <h5 class="card-title">Request Body</h5>
             <pre>${formatJSON(request.request.body)}</pre>
           </div>`;
-      
+
         $('#request-details').html(detailsREQ);
 
         let detailsRESP = `
@@ -61,12 +61,12 @@ $(document).ready(function () {
             <h5 class="card-title">Response Body</h5>
             <pre>${formatJSON(request.response.body)}</pre>
           </div>`;
-      
+
         $('#response-details').html(detailsRESP);
-        
-      }
-      
-      
+
+    }
+
+
 
     function clearLogs() {
         $.ajax({

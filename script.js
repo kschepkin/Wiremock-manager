@@ -210,7 +210,7 @@ function fetchFiles() {
 
                 const listItem = document.createElement('li');
                 listItem.classList.add('list-group-item', 'hstack', 'gap-3', 'd-flex', 'justify-content-between');
-                
+
                 // Создаем элемент для имени файла
                 const fileNameSpan = document.createElement('span');
                 fileNameSpan.textContent = fileName;

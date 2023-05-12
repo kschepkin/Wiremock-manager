@@ -30,17 +30,20 @@
         }
 
         .mapping-card .card-header,
-    .mapping-card .card-body {
-        padding: 0.5rem; /* Уменьшаем отступы внутри заголовка и тела карточки */
-    }
+        .mapping-card .card-body {
+            padding: 0.5rem;
+            /* Уменьшаем отступы внутри заголовка и тела карточки */
+        }
 
-    .mapping-card .card-body p {
-        margin-bottom: 0.25rem; /* Устанавливаем меньший отступ снизу для абзацев */
-    }
+        .mapping-card .card-body p {
+            margin-bottom: 0.25rem;
+            /* Устанавливаем меньший отступ снизу для абзацев */
+        }
 
-    #mappings-list .mapping-card:not(:first-child) {
-        margin-top: 0.1rem; /* Добавляем отступ сверху для всех карточек, кроме первой */
-    }
+        #mappings-list .mapping-card:not(:first-child) {
+            margin-top: 0.1rem;
+            /* Добавляем отступ сверху для всех карточек, кроме первой */
+        }
     </style>
     <title>Wiremock Manager</title>
 </head>
@@ -102,8 +105,10 @@
                     <div class="card-body">
                         <textarea class="form-control" id="mapping-editor" rows="14"></textarea>
                         <div class="hstack gap-1 d-flex">
-                            <button class="btn btn-primary mt-2 flex-grow-1" id="save-mapping" style="width: 100%;">Сохранить маппинг</button>
-                            <button class="btn btn-outline-primary mt-2 flex-grow-1" id="create-mapping" style="width: 100%;">Создать новый маппинг</button>
+                            <button class="btn btn-primary mt-2 flex-grow-1" id="save-mapping"
+                                style="width: 100%;">Сохранить маппинг</button>
+                            <button class="btn btn-outline-primary mt-2 flex-grow-1" id="create-mapping"
+                                style="width: 100%;">Создать новый маппинг</button>
                             <select class="form-select mt-2" id="mapping-option" style="max-width: 250px;">
                                 <option value="default">Добавить опцию</option>
                                 <option value="delay">Добавить задержку</option>
@@ -113,7 +118,7 @@
                             </select>
                         </div>
                     </div>
-                    
+
                 </div>
             </div>
         </div>
@@ -156,8 +161,8 @@
             </li>
         </ul>
     </div>
-    
-    
+
+
 </body>
 
 </html>
