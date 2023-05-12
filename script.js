@@ -209,8 +209,12 @@ function fetchFiles() {
                 const fileName = filePathParts[filePathParts.length - 1];
 
                 const listItem = document.createElement('li');
-                listItem.classList.add('list-group-item', 'hstack', 'gap-3');
-                listItem.textContent = fileName;
+                listItem.classList.add('list-group-item', 'hstack', 'gap-3', 'd-flex', 'justify-content-between');
+                
+                // Создаем элемент для имени файла
+                const fileNameSpan = document.createElement('span');
+                fileNameSpan.textContent = fileName;
+                listItem.appendChild(fileNameSpan);
 
                 // Создаем кнопку "удалить"
                 const deleteButton = document.createElement('button');
@@ -221,7 +225,11 @@ function fetchFiles() {
                     deleteFile(fileName);
                 });
 
-                listItem.appendChild(deleteButton);
+                // Создаем элемент для кнопки удаления
+                const deleteButtonSpan = document.createElement('span');
+                deleteButtonSpan.appendChild(deleteButton);
+                listItem.appendChild(deleteButtonSpan);
+
                 listItem.addEventListener('click', () => {
                     fetchFileContent(fileName);
                     newFileName.value = fileName;
@@ -230,6 +238,7 @@ function fetchFiles() {
             });
         });
 }
+
 
 function deleteFile(fileName) {
     fetch(`${config.serverUrl}/__admin/files/${fileName}`, {
