@@ -17,7 +17,7 @@ const saveFile = document.getElementById('save-file');
 const createMapping = document.getElementById('create-mapping');
 const createFile = document.getElementById('create-file');
 const newFileName = document.getElementById('new-file-name');
-const deleteAllMappings = document.getElementById('delete-all-mappings');
+// const deleteAllMappings = document.getElementById('delete-all-mappings');
 
 function showToast(type, message) {
     const toastElement = document.getElementById(`${type}-toast`);
@@ -49,7 +49,7 @@ function fetchMappings() {
                 deleteButton.textContent = 'X';
                 deleteButton.addEventListener('click', (e) => {
                     e.stopPropagation(); // Останавливаем всплытие события, чтобы избежать выбора маппинга
-                    deleteMapping(mapping.id);
+                    deleteMapping(mapping.id)
                 });
 
                 li.appendChild(deleteButton);
@@ -71,6 +71,7 @@ function deleteMapping(id) {
             if (response.ok) {
                 fetchMappings();
                 showToast("success", "Удалено.");
+
             } else {
                 throw new Error("Ошибка сервера");
             }
@@ -79,6 +80,19 @@ function deleteMapping(id) {
             console.error("Ошибка:", error);
             showToast("error", "Ошибка сохранения.");
         });
+        const mappingEditor = document.getElementById('mapping-editor');
+                    let currentMapping;
+
+                    try {
+                        currentMapping = JSON.parse(mappingEditor.value);
+                    } catch (e) {
+                        mappingOptionSelect.selectedIndex = 0;
+                        return;
+                    }
+                    delete currentMapping.id;
+                    delete currentMapping.uuid;
+                    
+                    mappingEditor.value = JSON.stringify(currentMapping, null, 2);
 }
 
 let isEditing = false;
@@ -150,9 +164,9 @@ saveMapping.addEventListener('click', () => {
             console.error("Ошибка:", error);
             showToast("error", "Ошибка сохранения данных.");
             saveMapping.classList.add("btn-danger");
-                setTimeout(() => {
-                    saveMapping.classList.remove("btn-danger");
-                }, 1000);
+            setTimeout(() => {
+                saveMapping.classList.remove("btn-danger");
+            }, 1000);
         });
 });
 
@@ -297,6 +311,10 @@ function applyMappingOption() {
     } else if (mappingOption === 'body-replace') {
         delete currentMapping.response.bodyFileName;
         currentMapping.response.body = "example";
+    } else if (mappingOption === 'scenario') {
+        currentMapping.scenarioName = "Scenario1";
+        currentMapping.newScenarioState = "active";
+        currentMapping.requiredScenarioState = "started";
     } else {
         showToast("error", "Ошибка применения опции.");
         mappingOptionSelect.selectedIndex = 0;
