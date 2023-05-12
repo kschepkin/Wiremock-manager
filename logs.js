@@ -27,21 +27,46 @@ $(document).ready(function () {
 
     function getRequestDetails(requestId) {
         $.get(`${config.serverUrl}/__admin/requests/` + requestId, function (data) {
-            displayRequestDetails(data);
+          displayRequestDetails(data);
         });
-    }
+      }
+      
+      function displayRequestDetails(request) {
+        // Функция для форматирования JSON с отступами и переносами строк
+        function formatJSON(json) {
+          return JSON.stringify(json, null, 2)
+            .replace(/\\n/g, '\n') // Замена символов перевода строки
+            .replace(/\\'/g, "'") // Удаление экранирования кавычек
+            .replace(/\\"/g, '"') // Замена экранированных кавычек
+            .replace(/\}"/g, '}') // Удаление кавычек после }
+            .replace(/"\{/g, '{'); // Удаление кавычек перед {
+        }
+      
+        let detailsREQ = `
+          <div class="card-header">${request.request.method} ${request.request.url}</div>
+          <div class="card-body">
+            <h5 class="card-title">Request Headers</h5>
+            <pre>${formatJSON(request.request.headers)}</pre>
+            <h5 class="card-title">Request Body</h5>
+            <pre>${formatJSON(request.request.body)}</pre>
+          </div>`;
+      
+        $('#request-details').html(detailsREQ);
 
-    function displayRequestDetails(request) {
-        let detailsHTML = `
-            <div class="card-header">${request.request.method} ${request.request.url}</div>
-            <div class="card-body">
-                <h5 class="card-title">Request Headers</h5>
-                <pre>${JSON.stringify(request.request.headers, null, 2)}</pre>
-                <h5 class="card-title">Request Body</h5>
-                <pre>${JSON.stringify(request.request.body, null, 2)}</pre>
-            </div>`;
-        $('#request-details').html(detailsHTML);
-    }
+        let detailsRESP = `
+          <div class="card-header">${request.request.method} ${request.request.url}</div>
+          <div class="card-body">
+            <h5 class="card-title">Response Headers</h5>
+            <pre>${formatJSON(request.response.headers)}</pre>
+            <h5 class="card-title">Response Body</h5>
+            <pre>${formatJSON(request.response.body)}</pre>
+          </div>`;
+      
+        $('#response-details').html(detailsRESP);
+        
+      }
+      
+      
 
     function clearLogs() {
         $.ajax({
