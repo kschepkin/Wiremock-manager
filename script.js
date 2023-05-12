@@ -39,28 +39,53 @@ function fetchMappings() {
             mappingsList.innerHTML = '';
 
             data.mappings.forEach(mapping => {
-                const li = document.createElement('li');
-                li.classList.add('list-group-item', 'hstack', 'gap-3');
-                li.innerText = mapping.request.url;
+                const card = document.createElement('div');
+                card.classList.add('card', 'mapping-card');
 
-                // Создаем кнопку "удалить"
+                const cardHeader = document.createElement('div');
+                cardHeader.classList.add('card-header', 'd-flex', 'justify-content-between', 'align-items-center');
+                const mappingTitle = document.createElement('span');
+                mappingTitle.innerText = mapping.request.url;
+                cardHeader.appendChild(mappingTitle);
+
                 const deleteButton = document.createElement('button');
-                deleteButton.classList.add('btn', 'btn-danger', 'mb-1');
+                deleteButton.classList.add('btn', 'btn-danger', 'mb-1', 'ms-3');
                 deleteButton.textContent = 'X';
                 deleteButton.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Останавливаем всплытие события, чтобы избежать выбора маппинга
-                    deleteMapping(mapping.id)
+                    e.stopPropagation();
+                    deleteMapping(mapping.id);
                 });
+                cardHeader.appendChild(deleteButton);
+                card.appendChild(cardHeader);
 
-                li.appendChild(deleteButton);
-                li.addEventListener('click', () => fetchMapping(mapping.id));
-                mappingsList.appendChild(li);
+                if (mapping.scenarioName && mapping.requiredScenarioState) {
+                    const cardBody = document.createElement('div');
+                    cardBody.classList.add('card-body');
+
+                    const scenarioName = document.createElement('p');
+                    scenarioName.innerHTML = `<strong>Сценарий:</strong> ${mapping.scenarioName}`;
+                    cardBody.appendChild(scenarioName);
+
+                    const requiredScenarioState = document.createElement('p');
+                    requiredScenarioState.innerHTML = `<strong>Требуемое состояние:</strong> ${mapping.requiredScenarioState}`;
+                    cardBody.appendChild(requiredScenarioState);
+
+                    card.appendChild(cardBody);
+                }
+
+                card.addEventListener('click', () => fetchMapping(mapping.id));
+                mappingsList.appendChild(card);
             });
         })
         .catch(() => {
             showToast("error", "Ошибка получения данных.");
         });
 }
+
+
+
+
+
 
 
 function deleteMapping(id) {
@@ -80,19 +105,19 @@ function deleteMapping(id) {
             console.error("Ошибка:", error);
             showToast("error", "Ошибка сохранения.");
         });
-        const mappingEditor = document.getElementById('mapping-editor');
-                    let currentMapping;
+    const mappingEditor = document.getElementById('mapping-editor');
+    let currentMapping;
 
-                    try {
-                        currentMapping = JSON.parse(mappingEditor.value);
-                    } catch (e) {
-                        mappingOptionSelect.selectedIndex = 0;
-                        return;
-                    }
-                    delete currentMapping.id;
-                    delete currentMapping.uuid;
-                    
-                    mappingEditor.value = JSON.stringify(currentMapping, null, 2);
+    try {
+        currentMapping = JSON.parse(mappingEditor.value);
+    } catch (e) {
+        mappingOptionSelect.selectedIndex = 0;
+        return;
+    }
+    delete currentMapping.id;
+    delete currentMapping.uuid;
+
+    mappingEditor.value = JSON.stringify(currentMapping, null, 2);
 }
 
 let isEditing = false;
@@ -169,6 +194,8 @@ saveMapping.addEventListener('click', () => {
             }, 1000);
         });
 });
+
+
 
 // Работа с файлами
 function fetchFiles() {
