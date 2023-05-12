@@ -13,29 +13,54 @@
 </head>
 
 <body>
+    <nav class="navbar navbar-expand-lg bg-light">
+        <div class="container-fluid">
+            <strong class="navbar-brand">Wiremock</strong>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Редактор маппинга</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link disabled" href="/logs.html">Логи</a>
+                    </li>
+
+
+                </ul>
+                <div class="hstack gap-2 d-flex align-items-center">
+                    <label for="refresh-interval" class="mb-0 mr-1">Обновление:</label>
+                    <select id="refresh-interval" class="custom-select custom-select-sm mb-0 mr-3">
+                        <option value="3000">3 сек</option>
+                        <option value="5000" selected>5 сек</option>
+                        <option value="10000">10 сек</option>
+                    </select>
+                    <button id="clear-logs" class="btn btn-danger ml-2 mb-1">Очистить лог</button>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
     <div class="container-fluid">
 
-        <div class="row mt-3">
-            <div class="col-md-4">
+        <div class="row mt-1">
+            <div class="col-md-4 ml-5">
                 <div class="d-flex align-items-center justify-content-between">
                     <div class="hstack gap-1 d-flex">
                         <h3 class="mb-0">Запросы</h3>
-                        <button id="clear-logs" class="btn btn-danger ml-2 mb-1">Очистить лог</button>
-                    </div>
-                    <div class="hstack gap-1 d-flex align-items-center">
-                        <label for="refresh-interval" class="mb-0 mr-1">Обновление:</label>
-                        <select id="refresh-interval" class="custom-select custom-select-sm mb-0">
-                            <option value="3000">3 сек</option>
-                            <option value="5000" selected>5 сек</option>
-                            <option value="10000">10 сек</option>
-                        </select>
+
                     </div>
                 </div>
 
 
-                <ul id="request-list" class="list-group"></ul>
+                <ul id="request-list" class="list-group mb-3"></ul>
             </div>
-            <div class="col-md-8">
+            <div class="col-md-8 mr-5 mt-1">
 
                 <div class="accordion" id="accordionExample">
                     <div class="accordion-item">
@@ -65,7 +90,9 @@
                         <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
                             data-bs-parent="#accordionExample">
                             <div class="accordion-body">
-                                <div id="response-details" class="card"></div>
+                                <div id="response-details" class="card">
+                                    <div class="card-header">Выберите запрос</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -84,18 +111,6 @@
 
 
     <script src="logs.js"></script>
-
-    <div class="position-fixed fixed-bottom btn-group dropup" style="pointer-events: none;">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link" href="/" style="pointer-events: auto;">Редактор</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link disabled" href="/logs.html">Логи</a>
-            </li>
-        </ul>
-    </div>
-
 
 </body>
 
