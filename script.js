@@ -19,12 +19,17 @@ const createFile = document.getElementById('create-file');
 const newFileName = document.getElementById('new-file-name');
 const deleteAllMappings = document.getElementById('delete-all-mappings');
 
-function showToast(type) {
-    const toast = new bootstrap.Toast(document.getElementById(`${type}-toast`), {
-        delay: 4000
+function showToast(type, message) {
+    const toastElement = document.getElementById(`${type}-toast`);
+    const toastBody = toastElement.querySelector('.toast-body');
+    toastBody.innerText = message;
+
+    const toast = new bootstrap.Toast(toastElement, {
+        delay: 3000
     });
     toast.show();
 }
+
 
 // Работа с маппингами
 function fetchMappings() {
@@ -51,8 +56,12 @@ function fetchMappings() {
                 li.addEventListener('click', () => fetchMapping(mapping.id));
                 mappingsList.appendChild(li);
             });
+        })
+        .catch(() => {
+            showToast("error", "Ошибка получения данных.");
         });
 }
+
 
 function deleteMapping(id) {
     fetch(`${config.serverUrl}/__admin/mappings/${id}`, {
@@ -61,14 +70,14 @@ function deleteMapping(id) {
         .then(response => {
             if (response.ok) {
                 fetchMappings();
-                showToast("success");
+                showToast("success", "Удалено.");
             } else {
                 throw new Error("Ошибка сервера");
             }
         })
         .catch(error => {
             console.error("Ошибка:", error);
-            showToast("error");
+            showToast("error", "Ошибка сохранения.");
         });
 }
 
@@ -128,14 +137,22 @@ saveMapping.addEventListener('click', () => {
         .then((response) => {
             if (response.ok) {
                 fetchMappings();
-                showToast("success");
+                showToast("success", "Сохранено");
+                saveMapping.classList.add("btn-success");
+                setTimeout(() => {
+                    saveMapping.classList.remove("btn-success");
+                }, 1000);
             } else {
                 throw new Error("Ошибка сервера");
             }
         })
         .catch((error) => {
             console.error("Ошибка:", error);
-            showToast("error");
+            showToast("error", "Ошибка сохранения данных.");
+            saveMapping.classList.add("btn-danger");
+                setTimeout(() => {
+                    saveMapping.classList.remove("btn-danger");
+                }, 1000);
         });
 });
 
@@ -180,14 +197,14 @@ function deleteFile(fileName) {
         .then(response => {
             if (response.ok) {
                 fetchFiles();
-                showToast("success");
+                showToast("success", "Файл удален.");
             } else {
                 throw new Error("Ошибка сервера");
             }
         })
         .catch(error => {
             console.error("Ошибка:", error);
-            showToast("error");
+            showToast("error", "Произошла ошибка.");
         });
 }
 
@@ -211,7 +228,7 @@ saveFile.addEventListener('click', () => {
     const fileContent = fileEditor.value;
 
     if (filename === '') {
-        alert('Пожалуйста, введите имя файла.');
+        showToast("error", "Введите имя или выберите файл из списка.");
         return;
     }
 
@@ -228,15 +245,15 @@ saveFile.addEventListener('click', () => {
                 saveFile.classList.add("btn-success");
                 setTimeout(() => {
                     saveFile.classList.remove("btn-success");
-                }, 4000);
-                showToast("success");
+                }, 1000);
+                showToast("success", "Файл сохранен.");
             } else {
                 throw new Error("Ошибка сервера");
             }
         })
         .catch(error => {
             console.error("Ошибка:", error);
-            showToast("error");
+            showToast("error", "Ошибка сохранения данных.");
         });
 });
 
@@ -258,7 +275,7 @@ function applyMappingOption() {
     try {
         currentMapping = JSON.parse(mappingEditor.value);
     } catch (e) {
-        showToast("error");
+        showToast("error", "Проверьте корректность данных.");
         mappingOptionSelect.selectedIndex = 0;
         return;
     }
@@ -281,13 +298,13 @@ function applyMappingOption() {
         delete currentMapping.response.bodyFileName;
         currentMapping.response.body = "example";
     } else {
-        showToast("error");
+        showToast("error", "Ошибка применения опции.");
         mappingOptionSelect.selectedIndex = 0;
         return;
     }
 
     mappingEditor.value = JSON.stringify(currentMapping, null, 2);
-    showToast("success", "Опция применена успешно.");
+    showToast("info", "Применено, сохраните маппинг.");
     mappingOptionSelect.selectedIndex = 0;
 }
 
