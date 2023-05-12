@@ -34,6 +34,8 @@ $(document).ready(function () {
     function displayRequestDetails(request) {
         // Функция для форматирования JSON с отступами и переносами строк
         function formatJSON(json) {
+            if (!json) return "";
+            
             return JSON.stringify(json, null, 2)
                 .replace(/\\n/g, '\n') // Замена символов перевода строки
                 .replace(/\\'/g, "'") // Удаление экранирования кавычек
