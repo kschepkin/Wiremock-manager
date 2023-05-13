@@ -116,6 +116,28 @@
                     </div>
                     <div class="card-body">
                         <div id="mappings-list"></div>
+                        <div class="modal fade" id="deleteMappingModal" tabindex="-1"
+                            aria-labelledby="deleteMappingModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="deleteMappingModalLabel">Удалить маппинг</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Вы уверены, что хотите удалить этот маппинг?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Отменить</button>
+                                        <button type="button" class="btn btn-danger"
+                                            id="confirmDeleteMapping">Удалить</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -125,19 +147,21 @@
                     <div class="card-header">
                         <h3 class="text-center">Редактор маппинга</h3>
                     </div>
-                    <div class="card-body">
-                        <textarea class="form-control" id="mapping-editor" rows="14"></textarea>
+                    <div class="card-body d-flex flex-column">
+                        <textarea class="form-control mb-2 flex-grow-1" id="mapping-editor" rows="14"></textarea>
                         <div class="hstack gap-1 d-flex">
                             <button class="btn btn-primary mt-2 flex-grow-1" id="save-mapping"
                                 style="width: 100%;">Сохранить маппинг</button>
                             <button class="btn btn-outline-primary mt-2 flex-grow-1" id="create-mapping"
-                                style="width: 100%;">Создать новый маппинг</button>
+                                style="width: 100%;">Новый маппинг</button>
                             <select class="form-select mt-2" id="mapping-option" style="max-width: 250px;">
                                 <option value="default">Добавить опцию</option>
                                 <option value="delay">Добавить задержку</option>
                                 <option value="status500">Изменить статус на 500</option>
                                 <option value="body-replace">Простое body</option>
                                 <option value="scenario">Сценарий</option>
+                                <option value="priority">Приоритет</option>
+                                <option value="contains">Запрос содержит</option>
                             </select>
                         </div>
                     </div>
@@ -154,19 +178,45 @@
                     </div>
                     <div class="card-body">
                         <ul id="files-list" class="list-group mb-2"></ul>
+                        <!-- File Deletion Modal -->
+                        <div class="modal fade" id="fileDeletionModal" tabindex="-1"
+                            aria-labelledby="fileDeletionModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="fileDeletionModalLabel">Подтверждение удаления файла
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Вы уверены, что хотите удалить этот файл?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Отмена</button>
+                                        <button type="button" class="btn btn-danger"
+                                            id="confirmFileDeletion">Удалить</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
                 </div>
             </div>
             <div class="col-md-8">
+
                 <div class="card h-100">
                     <div class="card-header">
                         <h3 class="text-center">Редактор файла</h3>
                     </div>
-                    <div class="card-body">
-                        <input type="text" class="form-control mb-2" id="new-file-name" placeholder="Имя файла">
-                        <textarea class="form-control" id="file-editor" rows="11"></textarea>
-                        <button class="btn btn-primary mt-2" id="save-file">Сохранить файл</button>
+                    <div class="card-body d-flex flex-column">
+                        <div class="hstack gap-1 d-flex mb-2"><input type="text" class="form-control" id="new-file-name"
+                                placeholder="Имя файла"> <button class="btn btn-primary"
+                                id="save-file">Сохранить</button></div>
+                        <textarea class="form-control form-control mb-2 flex-grow-1" id="file-editor"
+                            rows="11"></textarea>
                     </div>
                 </div>
             </div>

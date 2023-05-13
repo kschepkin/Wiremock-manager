@@ -17,7 +17,6 @@ const saveFile = document.getElementById('save-file');
 const createMapping = document.getElementById('create-mapping');
 const createFile = document.getElementById('create-file');
 const newFileName = document.getElementById('new-file-name');
-// const deleteAllMappings = document.getElementById('delete-all-mappings');
 
 function showToast(type, message) {
     const toastElement = document.getElementById(`${type}-toast`);
@@ -53,22 +52,48 @@ function fetchMappings() {
                 deleteButton.textContent = 'X';
                 deleteButton.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    deleteMapping(mapping.id);
+                    // Открываем модальное окно для подтверждения удаления
+                    const mappingDeletionModal = new bootstrap.Modal(document.getElementById('deleteMappingModal'));
+                    mappingDeletionModal.show();
+
+                    const confirmMappingDeletionBtn = document.getElementById('confirmDeleteMapping');
+
+                    // Удаляем предыдущий обработчик событий, если он существует
+                    const newConfirmMappingDeletionBtn = confirmMappingDeletionBtn.cloneNode(true);
+                    confirmMappingDeletionBtn.parentNode.replaceChild(newConfirmMappingDeletionBtn, confirmMappingDeletionBtn);
+
+                    // Обработка подтверждения удаления маппинга
+                    newConfirmMappingDeletionBtn.addEventListener('click', () => {
+                        mappingDeletionModal.hide();
+                        deleteMapping(mapping.id);
+                    });
                 });
                 cardHeader.appendChild(deleteButton);
                 card.appendChild(cardHeader);
 
-                if (mapping.scenarioName && mapping.requiredScenarioState) {
+                if (mapping.scenarioName || (mapping.request.bodyPatterns && mapping.request.bodyPatterns.length > 0)) {
                     const cardBody = document.createElement('div');
                     cardBody.classList.add('card-body');
 
-                    const scenarioName = document.createElement('p');
-                    scenarioName.innerHTML = `<strong>Сценарий:</strong> ${mapping.scenarioName}`;
-                    cardBody.appendChild(scenarioName);
+                    if (mapping.request.bodyPatterns && mapping.request.bodyPatterns.length > 0) {
+                        const containsPattern = mapping.request.bodyPatterns.find(pattern => pattern.contains);
 
-                    const requiredScenarioState = document.createElement('p');
-                    requiredScenarioState.innerHTML = `<strong>Требуемое состояние:</strong> ${mapping.requiredScenarioState}`;
-                    cardBody.appendChild(requiredScenarioState);
+                        if (containsPattern) {
+                            const containsInfo = document.createElement('p');
+                            containsInfo.innerHTML = `<strong>Если содержит:</strong> ${containsPattern.contains}`;
+                            cardBody.appendChild(containsInfo);
+                        }
+                    }
+
+                    if (mapping.scenarioName && mapping.requiredScenarioState) {
+                        const scenarioName = document.createElement('p');
+                        scenarioName.innerHTML = `<strong>Сценарий:</strong> ${mapping.scenarioName}`;
+                        cardBody.appendChild(scenarioName);
+
+                        const requiredScenarioState = document.createElement('p');
+                        requiredScenarioState.innerHTML = `<strong>Требуемое состояние:</strong> ${mapping.requiredScenarioState}`;
+                        cardBody.appendChild(requiredScenarioState);
+                    }
 
                     card.appendChild(cardBody);
                 }
@@ -81,6 +106,10 @@ function fetchMappings() {
             showToast("error", "Ошибка получения данных.");
         });
 }
+
+
+
+
 
 
 
@@ -222,7 +251,21 @@ function fetchFiles() {
                 deleteButton.textContent = 'X';
                 deleteButton.addEventListener('click', (e) => {
                     e.stopPropagation(); // Останавливаем всплытие события, чтобы избежать выбора файла
-                    deleteFile(fileName);
+                    // Открываем модальное окно для подтверждения удаления
+                    const fileDeletionModal = new bootstrap.Modal(document.getElementById('fileDeletionModal'));
+                    fileDeletionModal.show();
+
+                    const confirmFileDeletionBtn = document.getElementById('confirmFileDeletion');
+
+                    // Удаляем предыдущий обработчик событий, если он существует
+                    const newConfirmFileDeletionBtn = confirmFileDeletionBtn.cloneNode(true);
+                    confirmFileDeletionBtn.parentNode.replaceChild(newConfirmFileDeletionBtn, confirmFileDeletionBtn);
+
+                    // Обработка подтверждения удаления файла
+                    newConfirmFileDeletionBtn.addEventListener('click', () => {
+                        fileDeletionModal.hide();
+                        deleteFile(fileName);
+                    });
                 });
 
                 // Создаем элемент для кнопки удаления
@@ -238,6 +281,8 @@ function fetchFiles() {
             });
         });
 }
+
+
 
 
 function deleteFile(fileName) {
@@ -351,11 +396,16 @@ function applyMappingOption() {
         currentMapping.scenarioName = "Scenario1";
         currentMapping.newScenarioState = "active";
         currentMapping.requiredScenarioState = "started";
+    } else if (mappingOption === 'priority') {
+        currentMapping.priority = "1";
+    } else if (mappingOption === 'contains') {
+        currentMapping.request.bodyPatterns = [{ "contains": "текст поиска" }];
     } else {
         showToast("error", "Ошибка применения опции.");
         mappingOptionSelect.selectedIndex = 0;
         return;
     }
+
 
     mappingEditor.value = JSON.stringify(currentMapping, null, 2);
     showToast("info", "Применено, сохраните маппинг.");
