@@ -44,7 +44,12 @@ function fetchMappings() {
                 const cardHeader = document.createElement('div');
                 cardHeader.classList.add('card-header', 'd-flex', 'justify-content-between', 'align-items-center');
                 const mappingTitle = document.createElement('span');
-                mappingTitle.innerText = mapping.request.url;
+                if(mapping.response.proxyBaseUrl){
+                    mappingTitle.innerText = mapping.request.url + " (Proxy)";
+                } else {
+                    mappingTitle.innerText = mapping.request.url;
+                }
+                
                 cardHeader.appendChild(mappingTitle);
 
                 const deleteButton = document.createElement('button');
