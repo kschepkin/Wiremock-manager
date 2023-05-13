@@ -400,7 +400,12 @@ function applyMappingOption() {
         currentMapping.priority = "1";
     } else if (mappingOption === 'contains') {
         currentMapping.request.bodyPatterns = [{ "contains": "текст поиска" }];
-    } else {
+    } else if (mappingOption === 'proxy') {
+        currentMapping.response = {
+            "proxyBaseUrl": "http://otherhost.com/proxy"
+        };
+    }
+     else {
         showToast("error", "Ошибка применения опции.");
         mappingOptionSelect.selectedIndex = 0;
         return;
