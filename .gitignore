@@ -2,3 +2,5 @@
 __files
 mappings
 .DS_Store
+wiremock-mappings
+wiremock-files

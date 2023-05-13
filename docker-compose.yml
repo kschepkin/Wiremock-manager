@@ -1,0 +1,23 @@
+version: '3.2'
+
+services:
+  wiremock-server:
+    image: wiremock/wiremock
+    container_name: wiremock-server
+    volumes:
+      - ./wiremock-mappings:/home/wiremock/mappings
+      - ./wiremock-files:/home/wiremock/__files
+
+    ports:
+      - 8081:8080
+    networks:
+      wiremock-network:
+        aliases:
+          - wiremock-server
+
+networks:
+  wiremock-network:
+    #this should be an overlay network of a swarm cluster
+volumes:
+  wiremock-mappings:
+  wiremock-files:
