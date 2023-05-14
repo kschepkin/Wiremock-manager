@@ -29,6 +29,27 @@ function showToast(type, message) {
     toast.show();
 }
 
+function getElementSizeInRem(element) {
+    // Get the computed style of the element
+    const computedStyle = window.getComputedStyle(element);
+
+    // Get the font size of the root element
+    const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+    // Get the width and height of the element in pixels
+    const widthInPixels = parseFloat(computedStyle.width);
+    const heightInPixels = parseFloat(computedStyle.height);
+
+    // Convert the width and height from pixels to rem
+    const widthInRem = widthInPixels / rootFontSize;
+    const heightInRem = heightInPixels / rootFontSize;
+
+    // Return the width and height in rem
+    return {
+        width: widthInRem,
+        height: heightInRem
+    };
+}
 
 // Работа с маппингами
 function fetchMappings() {
@@ -44,12 +65,12 @@ function fetchMappings() {
                 const cardHeader = document.createElement('div');
                 cardHeader.classList.add('card-header', 'd-flex', 'justify-content-between', 'align-items-center');
                 const mappingTitle = document.createElement('span');
-                if(mapping.response.proxyBaseUrl){
+                if (mapping.response.proxyBaseUrl) {
                     mappingTitle.innerText = mapping.request.url + " (Proxy)";
                 } else {
                     mappingTitle.innerText = mapping.request.url;
                 }
-                
+
                 cardHeader.appendChild(mappingTitle);
 
                 const deleteButton = document.createElement('button');
@@ -110,11 +131,32 @@ function fetchMappings() {
         .catch(() => {
             showToast("error", "Ошибка получения данных.");
         });
+
+    const sizeInRem = getElementSizeInRem(mappingEditor);
+    mappingsList.style.maxHeight = sizeInRem.height + 3 + 'rem';
 }
 
 
 
+document.addEventListener('DOMContentLoaded', () => {
+    let mappingEditorisResizing = false;
 
+    mappingEditor.addEventListener('mousedown', () => {
+        mappingEditorisResizing = true;
+    });
+
+    mappingEditor.addEventListener('mouseup', () => {
+        mappingEditorisResizing = false;
+    });
+
+    mappingEditor.addEventListener('mousemove', () => {
+        if (mappingEditorisResizing) {
+            const sizeInRem = getElementSizeInRem(mappingEditor);
+            mappingsList.style.maxHeight = sizeInRem.height + 3 + 'rem';
+            console.log('mappingEditor is resizing');
+        }
+    });
+});
 
 
 
@@ -357,15 +399,6 @@ saveFile.addEventListener('click', () => {
         });
 });
 
-
-// deleteAllMappings.addEventListener('click', () => {
-//     fetch(`${config.serverUrl}/__admin/mappings`, {
-//         method: 'DELETE'
-//     }).then(() => {
-//         fetchMappings();
-//     });
-// });
-
 function applyMappingOption() {
     const mappingOptionSelect = document.getElementById('mapping-option');
     const mappingOption = mappingOptionSelect.value;
@@ -410,7 +443,7 @@ function applyMappingOption() {
             "proxyBaseUrl": "http://otherhost.com/proxy"
         };
     }
-     else {
+    else {
         showToast("error", "Ошибка применения опции.");
         mappingOptionSelect.selectedIndex = 0;
         return;
@@ -426,8 +459,6 @@ function applyMappingOption() {
 document.getElementById('mapping-option').addEventListener('change', () => {
     applyMappingOption();
 });
-
-
 
 
 fetchMappings();
