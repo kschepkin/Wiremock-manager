@@ -66,9 +66,9 @@ function fetchMappings() {
                 cardHeader.classList.add('card-header', 'd-flex', 'justify-content-between', 'align-items-center');
                 const mappingTitle = document.createElement('span');
                 if (mapping.response.proxyBaseUrl) {
-                    mappingTitle.innerText = mapping.request.url + " (Proxy)";
+                    mappingTitle.innerText = mapping.request.urlPattern + " (Proxy)";
                 } else {
-                    mappingTitle.innerText = mapping.request.url;
+                    mappingTitle.innerText = mapping.request.urlPattern;
                 }
 
                 cardHeader.appendChild(mappingTitle);
@@ -210,7 +210,7 @@ function fetchMapping(id) {
 function createNewMapping() {
     mappingEditor.value = JSON.stringify({
         "request": {
-            "url": "/example",
+            "urlPattern": "/example",
             "method": "ANY"
         },
         "response": {
