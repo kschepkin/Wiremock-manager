@@ -433,7 +433,7 @@ function applyMappingOption() {
     } else if (mappingOption === 'scenario') {
         currentMapping.scenarioName = "Scenario1";
         currentMapping.newScenarioState = "active";
-        currentMapping.requiredScenarioState = "started";
+        currentMapping.requiredScenarioState = "Started";
     } else if (mappingOption === 'priority') {
         currentMapping.priority = "1";
     } else if (mappingOption === 'contains') {
