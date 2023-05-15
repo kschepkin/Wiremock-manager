@@ -18,9 +18,11 @@ function getDate(loggedDateString) {
 
     let hours = ("0" + date.getHours()).slice(-2);
     let minutes = ("0" + date.getMinutes()).slice(-2);
+    let seconds = ("0" + date.getSeconds()).slice(-2);
 
-    return `${hours}:${minutes} ${day}.${month}.${year}`;
+    return `${hours}:${minutes}:${seconds} ${day}.${month}.${year}`;
 }
+
 
 
 $(document).ready(function () {
@@ -43,7 +45,7 @@ $(document).ready(function () {
         });
         $('#request-list').html(listHTML);
     }
-        
+
     
 
     function getRequestDetails(requestId) {
