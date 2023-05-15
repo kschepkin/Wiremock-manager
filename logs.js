@@ -9,6 +9,20 @@ function fetchConfig() {
         });
 }
 
+function getDate(loggedDateString) {
+    let date = new Date(loggedDateString);
+
+    let day = ("0" + date.getDate()).slice(-2);
+    let month = ("0" + (date.getMonth() + 1)).slice(-2);
+    let year = date.getFullYear();
+
+    let hours = ("0" + date.getHours()).slice(-2);
+    let minutes = ("0" + date.getMinutes()).slice(-2);
+
+    return `${hours}:${minutes} ${day}.${month}.${year}`;
+}
+
+
 $(document).ready(function () {
     function fetchRequests() {
         $.get(`${config.serverUrl}/__admin/requests`, function (data) {
@@ -16,14 +30,21 @@ $(document).ready(function () {
             populateRequestList(requests);
         });
     }
-
     function populateRequestList(requests) {
         let listHTML = '';
         requests.forEach(request => {
-            listHTML += `<li class="list-group-item" data-request-id="${request.id}">${request.request.method} ${request.request.url}</li>`;
+            let dateTime = getDate(request.request.loggedDateString);
+            listHTML += `<li class="list-group-item" data-request-id="${request.id}">
+                            <div style="display: flex; justify-content: space-between;">
+                                <div>${request.request.method} ${request.request.url}</div>
+                                <div>${dateTime}</div>
+                            </div>
+                         </li>`;
         });
         $('#request-list').html(listHTML);
     }
+        
+    
 
     function getRequestDetails(requestId) {
         $.get(`${config.serverUrl}/__admin/requests/` + requestId, function (data) {
