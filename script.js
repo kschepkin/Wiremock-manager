@@ -64,14 +64,37 @@ function fetchMappings() {
 
                 const cardHeader = document.createElement('div');
                 cardHeader.classList.add('card-header', 'd-flex', 'justify-content-between', 'align-items-center');
-                const mappingTitle = document.createElement('span');
-                if (mapping.response.proxyBaseUrl) {
-                    mappingTitle.innerText = mapping.request.urlPattern + " (Proxy)";
-                } else {
-                    mappingTitle.innerText = mapping.request.urlPattern;
+
+                const mappingTitleContainer = document.createElement('div');
+                mappingTitleContainer.classList.add('mapping-title-container');
+                const mappingTitle = document.createElement('p');
+                const mappingProjectTitle = document.createElement('p');
+
+                if (mapping.metadata.project) {
+                    mappingProjectTitle.innerHTML = `<strong>${mapping.metadata.project}</strong>`;
+                }
+                if (mapping.metadata.service) {
+                    mappingProjectTitle.innerHTML += `<strong>/${mapping.metadata.service}</strong>`;
+                }
+                mappingTitleContainer.appendChild(mappingProjectTitle);
+
+                let title;
+                if (mapping.request.urlPattern) {
+                    title = mapping.request.urlPattern;
+                } else if (mapping.request.urlPath) {
+                    title = mapping.request.urlPath;
+                } else if (mapping.request.urlPathPattern) {
+                    title = mapping.request.urlPathPattern;
                 }
 
-                cardHeader.appendChild(mappingTitle);
+                if (mapping.response.proxyBaseUrl) {
+                    mappingTitle.innerText = title + " (Proxy)";
+                } else {
+                    mappingTitle.innerText = title;
+                }
+
+                mappingTitleContainer.appendChild(mappingTitle);
+                cardHeader.appendChild(mappingTitleContainer);
 
                 const deleteButton = document.createElement('button');
                 deleteButton.classList.add('btn', 'btn-danger', 'mb-1', 'ms-3');
@@ -111,11 +134,14 @@ function fetchMappings() {
                         }
                     }
 
-                    if (mapping.scenarioName && mapping.requiredScenarioState) {
+                    //Добавляем блок с данными сценария под заголовком маппинга
+                    if (mapping.scenarioName) {
                         const scenarioName = document.createElement('p');
                         scenarioName.innerHTML = `<strong>Сценарий:</strong> ${mapping.scenarioName}`;
                         cardBody.appendChild(scenarioName);
+                    }
 
+                    if (mapping.requiredScenarioState) {
                         const requiredScenarioState = document.createElement('p');
                         requiredScenarioState.innerHTML = `<strong>Требуемое состояние:</strong> ${mapping.requiredScenarioState}`;
                         cardBody.appendChild(requiredScenarioState);
@@ -442,6 +468,10 @@ function applyMappingOption() {
         currentMapping.response = {
             "proxyBaseUrl": "http://otherhost.com/proxy"
         };
+    } else if (mappingOption === 'project') {
+        currentMapping.metadata.project = "Мой проект";
+    } else if (mappingOption === 'service') {
+        currentMapping.metadata.service = "Мой сервис";
     }
     else {
         showToast("error", "Ошибка применения опции.");
