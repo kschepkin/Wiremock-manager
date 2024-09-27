@@ -1,11 +1,17 @@
 # Wiremock manager
- 
-# English 
-Simple admin panel to manage Wiremock, no assembly required, just put it in your web server folder and configure the server address in config.json
 
-You can also find here the config for Nginx, which allows you to host the application on the same server as WireMock.
-
-# Russian
-Легкая админ панель для управления Wiremock, не требует сборки, просто положите в папку вашего веб сервера и настройте адрес сервера в config.json
-
+Легкая админ панель для управления Wiremock, не требует сборки, просто положите в папку вашего веб сервера и настройте адрес сервера в config.json.
 Также вы можете найти тут конфиг для Nginx, который позволит разместить приложение на одном сервере с WireMock.
+
+## Local Development Setup
+
+Если вы хотите подключиться к проекту и вам требуется проверка локально, вот небольшая инструкция:
+
+1. Установите nginx и проверьте, что он отвечает, зайдя на стартовую страницу http://localhost:1000/
+2. Создайте в корневой папке nginx-а (обычно `/usr/share/nginx/html/`) папку "wiremock" и положите туда 3 файла: `config.json`, `index.html`, `script.js`
+3. В `config.json` задайте новое значение для "serverUrl": `"http://localhost:8080"`
+4. Запустите Docker контейнер с сервером Wiremock командой:
+   ```
+   docker run -it --net=host -p 8080:8080 --name wiremock wiremock/wiremock:3.9.1
+   ```
+5. В результате при обращении к http://localhost:1000/wiremock должен открыться фронт приложения, который обращается к http://localhost:8080 за данными.
