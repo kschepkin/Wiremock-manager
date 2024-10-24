@@ -17,6 +17,7 @@ const saveFile = document.getElementById('save-file');
 const createMapping = document.getElementById('create-mapping');
 const createFile = document.getElementById('create-file');
 const newFileName = document.getElementById('new-file-name');
+const projectFilter = document.getElementById('project-filter'); // Новый элемент для фильтрации проектов
 
 function showToast(type, message) {
     const toastElement = document.getElementById(`${type}-toast`);
@@ -30,21 +31,12 @@ function showToast(type, message) {
 }
 
 function getElementSizeInRem(element) {
-    // Get the computed style of the element
     const computedStyle = window.getComputedStyle(element);
-
-    // Get the font size of the root element
     const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
-
-    // Get the width and height of the element in pixels
     const widthInPixels = parseFloat(computedStyle.width);
     const heightInPixels = parseFloat(computedStyle.height);
-
-    // Convert the width and height from pixels to rem
     const widthInRem = widthInPixels / rootFontSize;
     const heightInRem = heightInPixels / rootFontSize;
-
-    // Return the width and height in rem
     return {
         width: widthInRem,
         height: heightInRem
@@ -52,13 +44,35 @@ function getElementSizeInRem(element) {
 }
 
 // Работа с маппингами
-function fetchMappings() {
-    fetch(`${config.serverUrl}/__admin/mappings`)
+function fetchMappings(filter = '') {
+    let url = `${config.serverUrl}/__admin/mappings`;
+
+    let options = {};
+
+    if (filter) {
+        url = `${config.serverUrl}/__admin/mappings/find-by-metadata`;
+        options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ contains: filter })
+        };
+    }
+
+    fetch(url, options)
         .then(response => response.json())
         .then(data => {
             mappingsList.innerHTML = '';
 
+            // Собираем проекты для фильтра
+            const projects = new Set();
+
             data.mappings.forEach(mapping => {
+                if (mapping.metadata && mapping.metadata.project) {
+                    projects.add(mapping.metadata.project);
+                }
+
                 const card = document.createElement('div');
                 card.classList.add('card', 'mapping-card');
 
@@ -70,10 +84,10 @@ function fetchMappings() {
                 const mappingTitle = document.createElement('p');
                 const mappingProjectTitle = document.createElement('p');
 
-                if (mapping.metadata.project) {
+                if (mapping.metadata && mapping.metadata.project) {
                     mappingProjectTitle.innerHTML = `<strong>${mapping.metadata.project}</strong>`;
                 }
-                if (mapping.metadata.service) {
+                if (mapping.metadata && mapping.metadata.service) {
                     mappingProjectTitle.innerHTML += `<strong>/${mapping.metadata.service}</strong>`;
                 }
                 mappingTitleContainer.appendChild(mappingProjectTitle);
@@ -153,6 +167,9 @@ function fetchMappings() {
                 card.addEventListener('click', () => fetchMapping(mapping.id));
                 mappingsList.appendChild(card);
             });
+
+            updateProjectFilter(projects);
+
         })
         .catch(() => {
             showToast("error", "Ошибка получения данных.");
@@ -162,7 +179,28 @@ function fetchMappings() {
     mappingsList.style.maxHeight = sizeInRem.height + 3 + 'rem';
 }
 
+function updateProjectFilter(projects) {
+    // Очищаем фильтр проектов
+    const currentValue = projectFilter.value;
+    projectFilter.innerHTML = '<option value="">Все проекты</option>';
 
+    projects.forEach(project => {
+        const option = document.createElement('option');
+        option.value = project;
+        option.textContent = project;
+        projectFilter.appendChild(option);
+    });
+
+    // Сохраняем выбранный ранее фильтр
+    if (currentValue) {
+        projectFilter.value = currentValue;
+    }
+}
+
+projectFilter.addEventListener('change', () => {
+    const selectedProject = projectFilter.value;
+    fetchMappings(selectedProject);
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     let mappingEditorisResizing = false;
@@ -183,12 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-
-
-
-
-
-
 
 function deleteMapping(id) {
     fetch(`${config.serverUrl}/__admin/mappings/${id}`, {
@@ -297,8 +329,6 @@ saveMapping.addEventListener('click', () => {
         });
 });
 
-
-
 // Работа с файлами
 function fetchFiles() {
     fetch(`${config.serverUrl}/__admin/files`)
@@ -355,9 +385,6 @@ function fetchFiles() {
         });
 }
 
-
-
-
 function deleteFile(fileName) {
     fetch(`${config.serverUrl}/__admin/files/${fileName}`, {
         method: 'DELETE'
@@ -376,10 +403,6 @@ function deleteFile(fileName) {
         });
 }
 
-
-
-
-
 function fetchFileContent(filename) {
     fetch(`${config.serverUrl}/__files/${filename}`)
         .then(response => response.text())
@@ -388,8 +411,6 @@ function fetchFileContent(filename) {
             newFileName.value = filename; // Сохраняем имя файла в поле для ввода имени файла
         });
 }
-
-
 
 saveFile.addEventListener('click', () => {
     const filename = newFileName.value;
@@ -479,17 +500,14 @@ function applyMappingOption() {
         return;
     }
 
-
     mappingEditor.value = JSON.stringify(currentMapping, null, 2);
     showToast("info", "Применено, сохраните маппинг.");
     mappingOptionSelect.selectedIndex = 0;
 }
 
-
 document.getElementById('mapping-option').addEventListener('change', () => {
     applyMappingOption();
 });
-
 
 fetchMappings();
 fetchFiles();
