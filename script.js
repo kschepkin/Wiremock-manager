@@ -266,6 +266,11 @@ function fetchMapping(id) {
         .then(data => {
             mappingEditor.value = JSON.stringify(data, null, 2);
             isEditing = true;
+
+            // Проверяем наличие bodyFileName и загружаем содержимое файла
+            if (data.response && data.response.bodyFileName) {
+                fetchFileContent(data.response.bodyFileName);
+            }
         });
 }
 
