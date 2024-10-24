@@ -27,9 +27,13 @@ function getDate(loggedDateString) {
 
 $(document).ready(function () {
     function fetchRequests() {
+        $('#loading-spinner').show();
         $.get(`${config.serverUrl}/__admin/requests`, function (data) {
             var requests = data.requests;
             populateRequestList(requests);
+            $('#loading-spinner').hide();
+        }).fail(function() {
+            $('#loading-spinner').hide();
         });
     }
     function populateRequestList(requests) {
@@ -131,5 +135,16 @@ $(document).ready(function () {
     fetchConfig().then(() => {
         fetchRequests();
         startInterval();
+    });
+});
+
+
+$(document).ready(function () {
+    $('#loading-spinner').show();
+    fetchRequests().then(function() {
+        $('#loading-spinner').hide();
+    }).catch(function(error) {
+        console.error('Ошибка загрузки запросов:', error);
+        $('#loading-spinner').hide();
     });
 });
