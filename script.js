@@ -303,7 +303,8 @@ saveMapping.addEventListener('click', () => {
     })
         .then((response) => {
             if (response.ok) {
-                fetchMappings();
+                const selectedProject = projectFilter.value; // Получаем текущий фильтр
+                fetchMappings(selectedProject); // Передаем фильтр в fetchMappings
                 showToast("success", "Сохранено");
                 saveMapping.classList.add("btn-success");
                 setTimeout(() => {
@@ -529,3 +530,4 @@ document.getElementById('mapping-option').addEventListener('change', () => {
 
 fetchMappings();
 fetchFiles();
+
