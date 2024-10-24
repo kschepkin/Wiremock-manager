@@ -65,14 +65,20 @@ function fetchMappings(filter = '') {
         .then(data => {
             mappingsList.innerHTML = '';
 
-            // Собираем проекты для фильтра
-            const projects = new Set();
+            // Собираем проекты для фильтра при загрузке страницы
+            if (!filter) {
+                const projects = new Set();
+
+                data.mappings.forEach(mapping => {
+                    if (mapping.metadata && mapping.metadata.project) {
+                        projects.add(mapping.metadata.project);
+                    }
+                });
+
+                updateProjectFilter(projects);
+            }
 
             data.mappings.forEach(mapping => {
-                if (mapping.metadata && mapping.metadata.project) {
-                    projects.add(mapping.metadata.project);
-                }
-
                 const card = document.createElement('div');
                 card.classList.add('card', 'mapping-card');
 
@@ -167,8 +173,6 @@ function fetchMappings(filter = '') {
                 card.addEventListener('click', () => fetchMapping(mapping.id));
                 mappingsList.appendChild(card);
             });
-
-            updateProjectFilter(projects);
 
         })
         .catch(() => {
