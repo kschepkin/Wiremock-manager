@@ -17,7 +17,8 @@ const saveFile = document.getElementById('save-file');
 const createMapping = document.getElementById('create-mapping');
 const createFile = document.getElementById('create-file');
 const newFileName = document.getElementById('new-file-name');
-const projectFilter = document.getElementById('project-filter'); // Новый элемент для фильтрации проектов
+const projectFilter = document.getElementById('project-filter'); // Фильтр проектов
+const fileFilterInput = document.getElementById('file-filter'); // Поле фильтрации файлов
 
 function showToast(type, message) {
     const toastElement = document.getElementById(`${type}-toast`);
@@ -46,7 +47,6 @@ function getElementSizeInRem(element) {
 // Работа с маппингами
 function fetchMappings(filter = '') {
     let url = `${config.serverUrl}/__admin/mappings`;
-
     let options = {};
 
     if (filter) {
@@ -330,59 +330,80 @@ saveMapping.addEventListener('click', () => {
 });
 
 // Работа с файлами
+// Работа с файлами
 function fetchFiles() {
     fetch(`${config.serverUrl}/__admin/files`)
         .then(response => response.json())
         .then(data => {
-            filesList.innerHTML = '';
+            // Если файлов больше 6, показываем поле фильтрации
+            if (data.length > 6) {
+                fileFilterInput.style.display = 'block';
 
-            data.forEach(file => {
-                const filePathParts = file.split('/');
-                const fileName = filePathParts[filePathParts.length - 1];
-
-                const listItem = document.createElement('li');
-                listItem.classList.add('list-group-item', 'hstack', 'gap-3', 'd-flex', 'justify-content-between');
-
-                // Создаем элемент для имени файла
-                const fileNameSpan = document.createElement('span');
-                fileNameSpan.textContent = fileName;
-                listItem.appendChild(fileNameSpan);
-
-                // Создаем кнопку "удалить"
-                const deleteButton = document.createElement('button');
-                deleteButton.classList.add('btn', 'btn-danger', 'mb-1');
-                deleteButton.textContent = 'X';
-                deleteButton.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Останавливаем всплытие события, чтобы избежать выбора файла
-                    // Открываем модальное окно для подтверждения удаления
-                    const fileDeletionModal = new bootstrap.Modal(document.getElementById('fileDeletionModal'));
-                    fileDeletionModal.show();
-
-                    const confirmFileDeletionBtn = document.getElementById('confirmFileDeletion');
-
-                    // Удаляем предыдущий обработчик событий, если он существует
-                    const newConfirmFileDeletionBtn = confirmFileDeletionBtn.cloneNode(true);
-                    confirmFileDeletionBtn.parentNode.replaceChild(newConfirmFileDeletionBtn, confirmFileDeletionBtn);
-
-                    // Обработка подтверждения удаления файла
-                    newConfirmFileDeletionBtn.addEventListener('click', () => {
-                        fileDeletionModal.hide();
-                        deleteFile(fileName);
-                    });
+                // Добавляем обработчик события для фильтрации
+                fileFilterInput.addEventListener('input', function() {
+                    const filterText = this.value.toLowerCase();
+                    displayFiles(data, filterText);
                 });
+            } else {
+                fileFilterInput.style.display = 'none';
+            }
 
-                // Создаем элемент для кнопки удаления
-                const deleteButtonSpan = document.createElement('span');
-                deleteButtonSpan.appendChild(deleteButton);
-                listItem.appendChild(deleteButtonSpan);
-
-                listItem.addEventListener('click', () => {
-                    fetchFileContent(fileName);
-                    newFileName.value = fileName;
-                });
-                filesList.appendChild(listItem);
-            });
+            // Отображаем файлы (возможно, с фильтрацией)
+            displayFiles(data, fileFilterInput.value.toLowerCase());
         });
+}
+
+function displayFiles(filesData, filterText) {
+    filesList.innerHTML = '';
+
+    filesData.forEach(file => {
+        const filePathParts = file.split('/');
+        const fileName = filePathParts[filePathParts.length - 1];
+
+        if (fileName.toLowerCase().includes(filterText)) {
+            const listItem = document.createElement('li');
+            listItem.classList.add('list-group-item', 'hstack', 'gap-3', 'd-flex', 'justify-content-between');
+
+            // Создаем элемент для имени файла
+            const fileNameSpan = document.createElement('span');
+            fileNameSpan.textContent = fileName;
+            listItem.appendChild(fileNameSpan);
+
+            // Создаем кнопку "удалить"
+            const deleteButton = document.createElement('button');
+            deleteButton.classList.add('btn', 'btn-danger', 'mb-1');
+            deleteButton.textContent = 'X';
+            deleteButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // Останавливаем всплытие события, чтобы избежать выбора файла
+                // Открываем модальное окно для подтверждения удаления
+                const fileDeletionModal = new bootstrap.Modal(document.getElementById('fileDeletionModal'));
+                fileDeletionModal.show();
+
+                const confirmFileDeletionBtn = document.getElementById('confirmFileDeletion');
+
+                // Удаляем предыдущий обработчик событий, если он существует
+                const newConfirmFileDeletionBtn = confirmFileDeletionBtn.cloneNode(true);
+                confirmFileDeletionBtn.parentNode.replaceChild(newConfirmFileDeletionBtn, confirmFileDeletionBtn);
+
+                // Обработка подтверждения удаления файла
+                newConfirmFileDeletionBtn.addEventListener('click', () => {
+                    fileDeletionModal.hide();
+                    deleteFile(fileName);
+                });
+            });
+
+            // Создаем элемент для кнопки удаления
+            const deleteButtonSpan = document.createElement('span');
+            deleteButtonSpan.appendChild(deleteButton);
+            listItem.appendChild(deleteButtonSpan);
+
+            listItem.addEventListener('click', () => {
+                fetchFileContent(fileName);
+                newFileName.value = fileName;
+            });
+            filesList.appendChild(listItem);
+        }
+    });
 }
 
 function deleteFile(fileName) {
@@ -404,7 +425,8 @@ function deleteFile(fileName) {
 }
 
 function fetchFileContent(filename) {
-    fetch(`${config.serverUrl}/__files/${filename}`)
+    url = `${config.serverUrl}/__files/${filename}`;
+    fetch(url)
         .then(response => response.text())
         .then(data => {
             fileEditor.value = data;
