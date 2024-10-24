@@ -8,6 +8,7 @@ fetch('config.json')
         fetchFiles();
     });
 
+const mappingsContainer = document.getElementById('mappings-container');
 const mappingsList = document.getElementById('mappings-list');
 const mappingEditor = document.getElementById('mapping-editor');
 const saveMapping = document.getElementById('save-mapping');
@@ -180,7 +181,7 @@ function fetchMappings(filter = '') {
         });
 
     const sizeInRem = getElementSizeInRem(mappingEditor);
-    mappingsList.style.maxHeight = sizeInRem.height + 3 + 'rem';
+    mappingsList.style.maxHeight = sizeInRem.height + 5 + 'rem';
 }
 
 function updateProjectFilter(projects) {
@@ -207,23 +208,7 @@ projectFilter.addEventListener('change', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    let mappingEditorisResizing = false;
 
-    mappingEditor.addEventListener('mousedown', () => {
-        mappingEditorisResizing = true;
-    });
-
-    mappingEditor.addEventListener('mouseup', () => {
-        mappingEditorisResizing = false;
-    });
-
-    mappingEditor.addEventListener('mousemove', () => {
-        if (mappingEditorisResizing) {
-            const sizeInRem = getElementSizeInRem(mappingEditor);
-            mappingsList.style.maxHeight = sizeInRem.height + 3 + 'rem';
-            console.log('mappingEditor is resizing');
-        }
-    });
 });
 
 function deleteMapping(id) {
@@ -539,6 +524,8 @@ function applyMappingOption() {
 document.getElementById('mapping-option').addEventListener('change', () => {
     applyMappingOption();
 });
+
+
 
 fetchMappings();
 fetchFiles();
