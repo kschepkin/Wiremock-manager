@@ -1,6 +1,7 @@
 let config;
 let refreshInterval;
-let lastSearchQuery = '';
+let allRequests = []; // Храним все запросы для фильтрации
+let currentFilter = ''; // Текущий фильтр
 
 function fetchConfig() {
     return fetch('config.json')
@@ -21,52 +22,22 @@ function getDate(loggedDateString) {
     return `${hours}:${minutes}:${seconds} ${day}.${month}.${year}`;
 }
 
-function searchRequests(searchQuery) {
-    $('#loading-spinner').show();
-    const requestBody = {
-        method: null,
-        urlPattern: null
-    };
-
-    // Определяем, является ли поисковый запрос HTTP методом
-    const httpMethods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'];
-    const upperQuery = searchQuery.toUpperCase();
+function filterRequests(filterText) {
+    currentFilter = filterText; // Сохраняем текущий фильтр
+    const filteredRequests = filterText
+        ? allRequests.filter(request => 
+            request.request.url.toLowerCase().includes(filterText.toLowerCase()))
+        : allRequests;
     
-    if (httpMethods.includes(upperQuery)) {
-        requestBody.method = upperQuery;
-    } else if (searchQuery) {
-        requestBody.urlPattern = `.*${searchQuery}.*`;
-    }
-
-    // Если строка поиска пуста, используем обычный метод получения всех запросов
-    if (!searchQuery) {
-        return fetchRequests();
-    }
-
-    return fetch(`${config.serverUrl}/__admin/requests/find`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
-    })
-    .then(response => response.json())
-    .then(data => {
-        const requests = (data && data.requests) ? data.requests : [];
-        populateRequestList(requests, true);
-        $('#loading-spinner').hide();
-    })
-    .catch(error => {
-        console.error('Error searching requests:', error);
-        $('#loading-spinner').hide();
-    });
+    renderRequestList(filteredRequests);
 }
 
 function fetchRequests() {
     $('#loading-spinner').show();
     return $.get(`${config.serverUrl}/__admin/requests`)
         .then(function(data) {
-            populateRequestList(data.requests || [], false);
+            allRequests = data.requests || []; // Сохраняем все запросы
+            filterRequests(currentFilter); // Применяем текущий фильтр
             $('#loading-spinner').hide();
         })
         .fail(function() {
@@ -74,35 +45,37 @@ function fetchRequests() {
         });
 }
 
-function populateRequestList(requests = [], isSearch = false) {
+// Отдельная функция для отрисовки списка
+function renderRequestList(requests) {
     function truncateUrl(url, maxLength = 25) {
         return url.length > maxLength ? url.substring(0, maxLength) + '...' : url;
     }
 
     // Сортируем запросы по дате (новые вверху)
     const sortedRequests = [...requests].sort((a, b) => {
-        const dateA = isSearch ? a.loggedDate : a.request.loggedDate;
-        const dateB = isSearch ? b.loggedDate : b.request.loggedDate;
-        return dateB - dateA;
+        return b.request.loggedDate - a.request.loggedDate;
     });
 
-    let listHTML = '';
+    let listHTML = '<ul class="list-group">';
+    
     sortedRequests.forEach(request => {
-        const reqData = isSearch ? request : request.request;
+        const reqData = request.request;
         if (reqData) {
             const dateTime = reqData.loggedDateString ? getDate(reqData.loggedDateString) : 'Дата не указана';
             const method = reqData.method || 'UNKNOWN';
             const url = reqData.url || 'URL не указан';
             const truncatedUrl = truncateUrl(url);
-
-            listHTML += `<li class="list-group-item" data-request-id="${request.id || ''}" title="${url}">
-                            <div style="display: flex; justify-content: space-between;">
-                                <div>${method} ${truncatedUrl}</div>
-                                <div>${dateTime}</div>
-                            </div>
-                         </li>`;
+            listHTML += `
+                <li class="list-group-item" data-request-id="${request.id}" title="${url}">        
+                    <div style="display: flex; justify-content: space-between;">
+                        <div>${method} ${truncatedUrl}</div>
+                        <div>${dateTime}</div>
+                    </div>
+                </li>`;
         }
     });
+    
+    listHTML += '</ul>';
     $('#request-list').html(listHTML);
 }
 
@@ -112,7 +85,7 @@ function getRequestDetails(requestId) {
     });
 }
 
-function displayRequestDetails(request, isSearch = false) {
+function displayRequestDetails(request) {
     function formatJSON(json) {
         if (!json) return "";
         try {
@@ -128,16 +101,15 @@ function displayRequestDetails(request, isSearch = false) {
         }
     }
 
-    // В зависимости от метода (поиск или получение всех запросов) используем разные поля
-    const reqData = isSearch ? request : request.request;
+    const reqData = request.request;
     const respData = request.response || {};
 
     let detailsREQ = `
         <div class="card-header">${reqData.method || 'UNKNOWN'} ${reqData.url || 'URL не указан'}</div>
         <div class="card-body">
-            <h5 class="card-title">Request Headers</h5>
+            <h5 class="card-title">Заголовки запроса</h5>
             <pre>${formatJSON(reqData.headers)}</pre>
-            <h5 class="card-title">Request Body</h5>
+            <h5 class="card-title">Тело запроса</h5>
             <pre>${formatJSON(reqData.body)}</pre>
         </div>`;
 
@@ -146,9 +118,9 @@ function displayRequestDetails(request, isSearch = false) {
     let detailsRESP = `
         <div class="card-header">${reqData.method || 'UNKNOWN'} ${reqData.url || 'URL не указан'}</div>
         <div class="card-body">
-            <h5 class="card-title">Response Headers</h5>
+            <h5 class="card-title">Заголовки ответа</h5>
             <pre>${formatJSON(respData.headers)}</pre>
-            <h5 class="card-title">Response Body</h5>
+            <h5 class="card-title">Тело ответа</h5>
             <pre>${formatJSON(respData.body)}</pre>
         </div>`;
 
@@ -160,7 +132,8 @@ function clearLogs() {
         url: `${config.serverUrl}/__admin/requests`,
         type: 'DELETE',
         success: function() {
-            fetchRequests();
+            allRequests = []; // Очищаем сохраненные запросы
+            renderRequestList([]);
         },
         error: function() {
             alert('Ошибка удаления логов');
@@ -173,16 +146,16 @@ function startInterval() {
         clearInterval(refreshInterval);
     }
     let interval = parseInt($('#refresh-interval').val(), 10);
-    refreshInterval = setInterval(() => {
-        if (lastSearchQuery) {
-            searchRequests(lastSearchQuery);
-        } else {
-            fetchRequests();
-        }
-    }, interval);
+    refreshInterval = setInterval(fetchRequests, interval);
 }
 
 $(document).ready(function() {
+    // Обработчик фильтрации
+    $('#filter-input').on('input', function() {
+        filterRequests($(this).val().trim());
+    });
+
+    // Обработчик клика по элементу списка
     $('#request-list').on('click', 'li', function() {
         var requestId = $(this).attr('data-request-id');
         getRequestDetails(requestId);
@@ -194,20 +167,6 @@ $(document).ready(function() {
 
     $('#refresh-interval').on('change', function() {
         startInterval();
-    });
-
-    $('#search-button').on('click', function() {
-        const searchQuery = $('#search-input').val().trim();
-        lastSearchQuery = searchQuery;
-        searchRequests(searchQuery);
-    });
-
-    $('#search-input').on('keypress', function(e) {
-        if (e.which === 13) {
-            const searchQuery = $(this).val().trim();
-            lastSearchQuery = searchQuery;
-            searchRequests(searchQuery);
-        }
     });
 
     fetchConfig().then(() => {

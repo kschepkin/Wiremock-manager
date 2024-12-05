@@ -25,12 +25,7 @@
                         </li>
                     </ul>
                     <div class="d-flex align-items-center">
-                        
-                        
-                    <div class="input-group me-3">
-                            <input type="text" id="search-input" class="form-control" placeholder="Поиск по URL или методу...">
-                            <button class="btn btn-outline-primary" type="button" id="search-button">Поиск</button>
-                        </div></div>
+                </div>
                 <div class="d-flex align-items-center">
                         
                         <div class="hstack gap-2">
@@ -56,6 +51,10 @@
                             <span class="visually-hidden">Загрузка...</span>
                         </div>
                     </div>
+                </div>
+                <div class="input-group mb-3 mt-3">
+                    <input type="text" id="filter-input" class="form-control" 
+                           placeholder="Фильтр по URL..." aria-label="Фильтр запросов">
                 </div>
                 <ul id="request-list" style="max-height: 88vh; overflow-y: auto;" class="list-group mt-2"></ul>
             </div>
