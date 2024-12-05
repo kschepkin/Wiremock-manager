@@ -104,6 +104,8 @@ function fetchMappings(filter = '') {
                     title = mapping.request.urlPattern;
                 } else if (mapping.request.urlPath) {
                     title = mapping.request.urlPath;
+                } else if (mapping.request.url) {
+                    title = mapping.request.url;
                 } else if (mapping.request.urlPathPattern) {
                     title = mapping.request.urlPathPattern;
                 }
