@@ -1,13 +1,7 @@
-// Загружаем конфиг
+// Глобальная конфигурация
 let config;
-fetch('config.json')
-    .then(response => response.json())
-    .then(data => {
-        config = data;
-        fetchMappings();
-        fetchFiles();
-    });
 
+// DOM элементы
 const mappingsContainer = document.getElementById('mappings-container');
 const mappingsList = document.getElementById('mappings-list');
 const mappingEditor = document.getElementById('mapping-editor');
@@ -18,8 +12,26 @@ const saveFile = document.getElementById('save-file');
 const createMapping = document.getElementById('create-mapping');
 const createFile = document.getElementById('create-file');
 const newFileName = document.getElementById('new-file-name');
-const projectFilter = document.getElementById('project-filter'); // Фильтр проектов
-const fileFilterInput = document.getElementById('file-filter'); // Поле фильтрации файлов
+const projectFilter = document.getElementById('project-filter');
+const fileFilterInput = document.getElementById('file-filter');
+
+// Инициализация приложения
+async function initializeApp() {
+    try {
+        const response = await fetch('config.json');
+        config = await response.json();
+        
+        // После загрузки конфигурации инициализируем основные компоненты
+        fetchMappings();
+        fetchFiles();
+        
+        // Инициализируем обработчики событий
+        setupEventListeners();
+    } catch (error) {
+        console.error('Failed to load configuration:', error);
+        showToast("error", "Ошибка загрузки конфигурации.");
+    }
+}
 
 function showToast(type, message) {
     const toastElement = document.getElementById(`${type}-toast`);
@@ -47,7 +59,8 @@ function getElementSizeInRem(element) {
 
 // Работа с маппингами
 function fetchMappings(filter = '') {
-    let url = `${config.serverUrl}/__admin/mappings`;
+    let url;
+    url = `${config.serverUrl}/__admin/mappings`;
     let options = {};
 
     if (filter) {
@@ -204,15 +217,6 @@ function updateProjectFilter(projects) {
     }
 }
 
-projectFilter.addEventListener('change', () => {
-    const selectedProject = projectFilter.value;
-    fetchMappings(selectedProject);
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-
-});
-
 function deleteMapping(id) {
     fetch(`${config.serverUrl}/__admin/mappings/${id}`, {
         method: 'DELETE'
@@ -221,7 +225,6 @@ function deleteMapping(id) {
             if (response.ok) {
                 fetchMappings();
                 showToast("success", "Удалено.");
-
             } else {
                 throw new Error("Ошибка сервера");
             }
@@ -230,19 +233,6 @@ function deleteMapping(id) {
             console.error("Ошибка:", error);
             showToast("error", "Ошибка сохранения.");
         });
-    const mappingEditor = document.getElementById('mapping-editor');
-    let currentMapping;
-
-    try {
-        currentMapping = JSON.parse(mappingEditor.value);
-    } catch (e) {
-        mappingOptionSelect.selectedIndex = 0;
-        return;
-    }
-    delete currentMapping.id;
-    delete currentMapping.uuid;
-
-    mappingEditor.value = JSON.stringify(currentMapping, null, 2);
 }
 
 let isEditing = false;
@@ -281,9 +271,7 @@ function createNewMapping() {
     isEditing = false;
 }
 
-createMapping.addEventListener('click', () => { createNewMapping(); });
-
-saveMapping.addEventListener('click', () => {
+function handleSaveMapping() {
     const mapping = JSON.parse(mappingEditor.value);
     let requestUrl;
     let requestMethod;
@@ -305,8 +293,8 @@ saveMapping.addEventListener('click', () => {
     })
         .then((response) => {
             if (response.ok) {
-                const selectedProject = projectFilter.value; // Получаем текущий фильтр
-                fetchMappings(selectedProject); // Передаем фильтр в fetchMappings
+                const selectedProject = projectFilter.value;
+                fetchMappings(selectedProject);
                 showToast("success", "Сохранено");
                 saveMapping.classList.add("btn-success");
                 setTimeout(() => {
@@ -324,9 +312,8 @@ saveMapping.addEventListener('click', () => {
                 saveMapping.classList.remove("btn-danger");
             }, 1000);
         });
-});
+}
 
-// Работа с файлами
 // Работа с файлами
 function fetchFiles() {
     fetch(`${config.serverUrl}/__admin/files`)
@@ -371,7 +358,7 @@ function displayFiles(filesData, filterText) {
             deleteButton.classList.add('btn', 'btn-danger', 'mb-1');
             deleteButton.textContent = 'X';
             deleteButton.addEventListener('click', (e) => {
-                e.stopPropagation(); // Останавливаем всплытие события, чтобы избежать выбора файла
+                e.stopPropagation();
                 // Открываем модальное окно для подтверждения удаления
                 const fileDeletionModal = new bootstrap.Modal(document.getElementById('fileDeletionModal'));
                 fileDeletionModal.show();
@@ -431,7 +418,7 @@ function fetchFileContent(filename) {
         });
 }
 
-saveFile.addEventListener('click', () => {
+function handleSaveFile() {
     const filename = newFileName.value;
     const fileContent = fileEditor.value;
 
@@ -463,12 +450,11 @@ saveFile.addEventListener('click', () => {
             console.error("Ошибка:", error);
             showToast("error", "Ошибка сохранения данных.");
         });
-});
+}
 
 function applyMappingOption() {
     const mappingOptionSelect = document.getElementById('mapping-option');
     const mappingOption = mappingOptionSelect.value;
-    const mappingEditor = document.getElementById('mapping-editor');
     let currentMapping;
 
     try {
@@ -501,7 +487,7 @@ function applyMappingOption() {
         currentMapping.newScenarioState = "active";
         currentMapping.requiredScenarioState = "Started";
     } else if (mappingOption === 'priority') {
-        currentMapping.priority = "1";
+        currentMapping.priority = 1;
     } else if (mappingOption === 'contains') {
         currentMapping.request.bodyPatterns = [{ "contains": "текст поиска" }];
     } else if (mappingOption === 'proxy') {
@@ -509,11 +495,16 @@ function applyMappingOption() {
             "proxyBaseUrl": "http://otherhost.com/proxy"
         };
     } else if (mappingOption === 'project') {
+        if (!currentMapping.metadata) {
+            currentMapping.metadata = {};
+        }
         currentMapping.metadata.project = "Мой проект";
     } else if (mappingOption === 'service') {
+        if (!currentMapping.metadata) {
+            currentMapping.metadata = {};
+        }
         currentMapping.metadata.service = "Мой сервис";
-    }
-    else {
+    } else {
         showToast("error", "Ошибка применения опции.");
         mappingOptionSelect.selectedIndex = 0;
         return;
@@ -524,12 +515,21 @@ function applyMappingOption() {
     mappingOptionSelect.selectedIndex = 0;
 }
 
-document.getElementById('mapping-option').addEventListener('change', () => {
-    applyMappingOption();
-});
+// Настройка обработчиков событий
+function setupEventListeners() {
+    projectFilter.addEventListener('change', () => {
+        const selectedProject = projectFilter.value;
+        fetchMappings(selectedProject);
+    });
 
+    createMapping.addEventListener('click', createNewMapping);
+    
+    saveMapping.addEventListener('click', handleSaveMapping);
+    
+    saveFile.addEventListener('click', handleSaveFile);
+    
+    document.getElementById('mapping-option').addEventListener('change', applyMappingOption);
+}
 
-
-fetchMappings();
-fetchFiles();
-
+// Инициализация приложения при загрузке DOM
+document.addEventListener('DOMContentLoaded', initializeApp);
