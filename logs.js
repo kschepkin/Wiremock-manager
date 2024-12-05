@@ -52,7 +52,8 @@ function searchRequests(searchQuery) {
     })
     .then(response => response.json())
     .then(data => {
-        populateRequestList(data.requests);
+        const requests = (data && data.requests) ? data.requests : [];
+        populateRequestList(requests, true);
         $('#loading-spinner').hide();
     })
     .catch(error => {
@@ -65,7 +66,7 @@ function fetchRequests() {
     $('#loading-spinner').show();
     return $.get(`${config.serverUrl}/__admin/requests`)
         .then(function(data) {
-            populateRequestList(data.requests);
+            populateRequestList(data.requests || [], false);
             $('#loading-spinner').hide();
         })
         .fail(function() {
@@ -73,16 +74,34 @@ function fetchRequests() {
         });
 }
 
-function populateRequestList(requests) {
+function populateRequestList(requests = [], isSearch = false) {
+    function truncateUrl(url, maxLength = 25) {
+        return url.length > maxLength ? url.substring(0, maxLength) + '...' : url;
+    }
+
+    // Сортируем запросы по дате (новые вверху)
+    const sortedRequests = [...requests].sort((a, b) => {
+        const dateA = isSearch ? a.loggedDate : a.request.loggedDate;
+        const dateB = isSearch ? b.loggedDate : b.request.loggedDate;
+        return dateB - dateA;
+    });
+
     let listHTML = '';
-    requests.forEach(request => {
-        let dateTime = getDate(request.request.loggedDateString);
-        listHTML += `<li class="list-group-item" data-request-id="${request.id}">
-                        <div style="display: flex; justify-content: space-between;">
-                            <div>${request.request.method} ${request.request.url}</div>
-                            <div>${dateTime}</div>
-                        </div>
-                     </li>`;
+    sortedRequests.forEach(request => {
+        const reqData = isSearch ? request : request.request;
+        if (reqData) {
+            const dateTime = reqData.loggedDateString ? getDate(reqData.loggedDateString) : 'Дата не указана';
+            const method = reqData.method || 'UNKNOWN';
+            const url = reqData.url || 'URL не указан';
+            const truncatedUrl = truncateUrl(url);
+
+            listHTML += `<li class="list-group-item" data-request-id="${request.id || ''}" title="${url}">
+                            <div style="display: flex; justify-content: space-between;">
+                                <div>${method} ${truncatedUrl}</div>
+                                <div>${dateTime}</div>
+                            </div>
+                         </li>`;
+        }
     });
     $('#request-list').html(listHTML);
 }
@@ -93,36 +112,44 @@ function getRequestDetails(requestId) {
     });
 }
 
-function displayRequestDetails(request) {
+function displayRequestDetails(request, isSearch = false) {
     function formatJSON(json) {
         if (!json) return "";
-        return JSON.stringify(json, null, 2)
-            .replace(/\\n/g, '\n')
-            .replace(/\\'/g, "'")
-            .replace(/\\"/g, '"')
-            .replace(/\\t/g, '\t')
-            .replace(/\}"/g, '}')
-            .replace(/"\{/g, '{');
+        try {
+            return JSON.stringify(json, null, 2)
+                .replace(/\\n/g, '\n')
+                .replace(/\\'/g, "'")
+                .replace(/\\"/g, '"')
+                .replace(/\\t/g, '\t')
+                .replace(/\}"/g, '}')
+                .replace(/"\{/g, '{');
+        } catch (e) {
+            return "Ошибка форматирования JSON";
+        }
     }
 
+    // В зависимости от метода (поиск или получение всех запросов) используем разные поля
+    const reqData = isSearch ? request : request.request;
+    const respData = request.response || {};
+
     let detailsREQ = `
-        <div class="card-header">${request.request.method} ${request.request.url}</div>
+        <div class="card-header">${reqData.method || 'UNKNOWN'} ${reqData.url || 'URL не указан'}</div>
         <div class="card-body">
             <h5 class="card-title">Request Headers</h5>
-            <pre>${formatJSON(request.request.headers)}</pre>
+            <pre>${formatJSON(reqData.headers)}</pre>
             <h5 class="card-title">Request Body</h5>
-            <pre>${formatJSON(request.request.body)}</pre>
+            <pre>${formatJSON(reqData.body)}</pre>
         </div>`;
 
     $('#request-details').html(detailsREQ);
 
     let detailsRESP = `
-        <div class="card-header">${request.request.method} ${request.request.url}</div>
+        <div class="card-header">${reqData.method || 'UNKNOWN'} ${reqData.url || 'URL не указан'}</div>
         <div class="card-body">
             <h5 class="card-title">Response Headers</h5>
-            <pre>${formatJSON(request.response.headers)}</pre>
+            <pre>${formatJSON(respData.headers)}</pre>
             <h5 class="card-title">Response Body</h5>
-            <pre>${formatJSON(request.response.body)}</pre>
+            <pre>${formatJSON(respData.body)}</pre>
         </div>`;
 
     $('#response-details').html(detailsRESP);
