@@ -29,6 +29,11 @@ RUN mkdir -p /usr/share/nginx/html
 COPY --from=web-stage /usr/share/nginx/html /usr/share/nginx/html
 COPY --from=web-stage /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
 
+# Удаляем дефолтную конфигурацию nginx и настраиваем правильно
+RUN rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default
+RUN echo 'events { worker_connections 1024; }' > /etc/nginx/nginx.conf
+RUN echo 'http { include /etc/nginx/mime.types; include /etc/nginx/conf.d/*.conf; }' >> /etc/nginx/nginx.conf
+
 # Исправляем права доступа к веб-файлам
 RUN chmod -R 644 /usr/share/nginx/html/* && chmod 755 /usr/share/nginx/html
 
