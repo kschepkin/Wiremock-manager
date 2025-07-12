@@ -1,0 +1,29 @@
+# Git и версионирование
+.git
+.gitignore
+.gitattributes
+
+# IDE и редакторы
+.vscode
+.DS_Store
+
+# Документация
+README.md
+LICENSE
+
+# Существующий docker-compose (чтобы не путался с новым)
+docker-compose.yml
+
+# Логи и временные файлы
+*.log
+*.tmp
+
+# Node.js (если использовались)
+node_modules
+npm-debug.log
+
+# Конфигурации (будут подключаться как тома)
+config.json
+config-docker.json
+config.json.template
+mock2-nginx.conf

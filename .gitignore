@@ -4,3 +4,5 @@ mappings
 .DS_Store
 wiremock-mappings
 wiremock-files
+/.vscode
+/.vscode

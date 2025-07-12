@@ -1,23 +1,38 @@
-version: '3.2'
+version: '3.8'
 
 services:
-  wiremock-server:
-    image: wiremock/wiremock
-    container_name: wiremock-server
+  wiremock-manager:
+    build: .
+    container_name: wiremock-manager
+    ports:
+      - "80:80"        # Веб-интерфейс на порту 80
+      - "8080:8080"    # API Wiremock на порту 8080 (опционально, для прямого доступа)
     volumes:
+      # Подключаем директории с маппингами и файлами
       - ./wiremock-mappings:/home/wiremock/mappings
       - ./wiremock-files:/home/wiremock/__files
-
-    ports:
-      - 8081:8080
+      # ПОДКЛЮЧЕНИЕ КОНФИГУРАЦИИ (ОБЯЗАТЕЛЬНО!)
+      - ./config.json:/usr/share/nginx/html/config.json:ro
+    environment:
+      # Переменные окружения для Java (опционально)
+      - JAVA_OPTS=-Xmx512m
     networks:
-      wiremock-network:
-        aliases:
-          - wiremock-server
+      - wiremock-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 networks:
   wiremock-network:
-    #this should be an overlay network of a swarm cluster
+    driver: bridge
+
+# Опционально: создание именованных томов для постоянного хранения данных
 volumes:
   wiremock-mappings:
+    driver: local
   wiremock-files:
+    driver: local
